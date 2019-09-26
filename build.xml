@@ -1,0 +1,108 @@
+<?xml version="1.0" ?>
+<project name="maven-evolution" default="war">
+
+    <!-- project-specific variables -->
+    <property name="package.name" value="maven-evolution.war" />
+    <property name="webapp.dir" value="/opt/apache-tomcat-9.0.26/webapps" />
+
+    <property environment="dev" />
+    <property name="build.dir" value="build" />
+    <property file="${build.dir}/build.${env.HOSTNAME}" />
+
+    <property name="lib.dir" value="lib" />
+    <property name="lib.test.dir" value="lib/test" />
+    <property name="src.dir" value="src/main/java" />
+    <property name="src.tests.dir" value="src/test/java" />
+    <property name="resources.dir" value="src/main/resources" />
+    <property name="dest.dir" value="target" />
+
+    <!-- put everything in a temp folder with the right structure during the build -->
+    <property name="temp.dir" value="temp" />
+    <property name="temp.dir.web-inf" value="${temp.dir}/WEB-INF" />
+    <property name="temp.dir.lib" value="${temp.dir.web-inf}/lib" />
+    <property name="temp.dir.classes" value="${temp.dir.web-inf}/classes" />
+    <property name="temp.dir.bin" value="${temp.dir.web-inf}/bin" />
+    <property name="temp.dir.meta-inf" value="${temp.dir}/META-INF" />
+
+    <property name="package.file" value="${dest.dir}/${package.name}" />
+
+    <path id="build.class.path">
+        <fileset dir="lib">
+            <include name="**/*.jar" />
+        </fileset>
+    </path>
+
+    <target name="clean">
+        <delete dir="${dest.dir}" />
+        <delete dir="${temp.dir}" />
+        <delete dir="${temp.dir.classes}" />
+        <delete dir="${temp.dir.bin}" />
+        <delete dir="${temp.dir.meta-inf}" />
+        <delete dir="${temp.dir.web-inf}" />
+    </target>
+
+    <target name="prepare" depends="clean">
+        <mkdir dir="${dest.dir}" />
+        <mkdir dir="${temp.dir}" />
+        <mkdir dir="${temp.dir.lib}" />
+        <mkdir dir="${temp.dir.meta-inf}" />
+        <mkdir dir="${temp.dir.web-inf}" />
+        <mkdir dir="${temp.dir.classes}" />
+        <mkdir dir="${temp.dir.bin}" />
+    </target>
+
+    <!-- COMPILE -->
+    <target name="compile" depends="prepare">
+        <echo>=== COMPILE ===</echo>
+        <echo>Compiling ${src.dir} files ...</echo>
+        <javac debug="on" srcdir="${src.dir}" destdir="${temp.dir.classes}" includes="**/*">
+            <classpath refid="build.class.path" />
+        </javac>
+        <javac debug="on" srcdir="${src.dir}" destdir="${temp.dir.bin}" includes="**/*">
+            <classpath refid="build.class.path" />
+        </javac>
+
+        <!-- compile files on the src-tests path -->
+        <echo>Compiling ${src.tests.dir} files ...</echo>
+        <javac debug="on" srcdir="${src.tests.dir}" destdir="${temp.dir.bin}" includes="com/**">
+            <classpath refid="build.class.path" />
+        </javac>
+    </target>
+
+    <target name="test" depends="compile">
+        <junit>
+            <classpath>
+                <pathelement location="${temp.dir.bin}" />
+                <pathelement location="lib/test/junit-4.11.jar"/>
+                <pathelement location="lib/test/byte-buddy-agent-1.9.10.jar"/>
+                <pathelement location="lib/test/byte-buddy-1.9.10.jar"/>
+                <pathelement location="lib/test/objenesis-2.6.jar"/>
+                <pathelement location="lib/test/hamcrest-2.1.jar"/>
+                <pathelement location="lib/test/mockito-core-2.28.2.jar"/>
+            </classpath>
+            <batchtest>
+                <fileset dir="${temp.dir.bin}">
+                    <include name="**/*Test.class" />
+                </fileset>
+            </batchtest>
+            <formatter type="brief" usefile="false"/>
+        </junit>
+    </target>
+
+    <!-- PACKAGE -->
+    <target name="package" depends="test">
+        <echo>=== PACKAGE ===</echo>
+        <!-- the ant war task. with all resources in place, create the war file -->
+        <war destfile="${package.file}" needxmlfile="false" >
+            <lib dir="${lib.dir}" includes="*.jar" />
+            <classes dir="${temp.dir.classes}" />
+        </war>
+    </target>
+
+    <!-- INSTALL -->
+    <target name="war" depends="package">
+        <echo>=== PACKAGING WAR ===</echo>
+        <copy file="${package.file}" tofile="${webapp.dir}/${package.name}" overwrite="true" />
+    </target>
+
+</project>
