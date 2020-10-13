@@ -23,7 +23,7 @@
         <jackson.version>2.9.10</jackson.version>
         <spring.version>4.3.18.RELEASE</spring.version>
         <javax.servlet.version>3.0.1</javax.servlet.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <mockito.version>3.0.0</mockito.version>
     </properties>
 
