@@ -20,7 +20,7 @@
         <java.version>11</java.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <jackson.version>2.9.10</jackson.version>
+        <jackson.version>2.12.1</jackson.version>
         <spring.version>4.3.18.RELEASE</spring.version>
         <javax.servlet.version>3.0.1</javax.servlet.version>
         <junit.version>4.12</junit.version>
